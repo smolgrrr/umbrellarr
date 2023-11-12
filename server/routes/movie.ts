@@ -1,4 +1,3 @@
-import IMDBRadarrProxy from '@server/api/rating/imdbRadarrProxy';
 import RottenTomatoes from '@server/api/rating/rottentomatoes';
 import { type RatingResponse } from '@server/api/ratings';
 import TheMovieDb from '@server/api/themoviedb';
@@ -162,7 +161,6 @@ movieRoutes.get('/:id/ratings', async (req, res, next) => {
 movieRoutes.get('/:id/ratingscombined', async (req, res, next) => {
   const tmdb = new TheMovieDb();
   const rtapi = new RottenTomatoes();
-  const imdbApi = new IMDBRadarrProxy();
 
   try {
     const movie = await tmdb.getMovie({
@@ -175,9 +173,6 @@ movieRoutes.get('/:id/ratingscombined', async (req, res, next) => {
     );
 
     let imdbRatings;
-    if (movie.imdb_id) {
-      imdbRatings = await imdbApi.getMovieRatings(movie.imdb_id);
-    }
 
     if (!rtratings && !imdbRatings) {
       return next({

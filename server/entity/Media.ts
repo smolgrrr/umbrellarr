@@ -1,5 +1,3 @@
-import RadarrAPI from '@server/api/servarr/radarr';
-import SonarrAPI from '@server/api/servarr/sonarr';
 import { MediaStatus, MediaType } from '@server/constants/media';
 import { getRepository } from '@server/datasource';
 import type { DownloadingItem } from '@server/lib/downloadtracker';
@@ -143,116 +141,8 @@ class Media {
   public downloadStatus?: DownloadingItem[] = [];
   public downloadStatus4k?: DownloadingItem[] = [];
 
-  public plexUrl?: string;
-  public plexUrl4k?: string;
-
-  public iOSPlexUrl?: string;
-  public iOSPlexUrl4k?: string;
-
-  public tautulliUrl?: string;
-  public tautulliUrl4k?: string;
-
   constructor(init?: Partial<Media>) {
     Object.assign(this, init);
-  }
-
-  @AfterLoad()
-  public setPlexUrls(): void {
-    const { machineId, webAppUrl } = getSettings().plex;
-    const { externalUrl: tautulliUrl } = getSettings().tautulli;
-
-    if (this.ratingKey) {
-      this.plexUrl = `${
-        webAppUrl ? webAppUrl : 'https://app.plex.tv/desktop'
-      }#!/server/${machineId}/details?key=%2Flibrary%2Fmetadata%2F${
-        this.ratingKey
-      }`;
-
-      this.iOSPlexUrl = `plex://preplay/?metadataKey=%2Flibrary%2Fmetadata%2F${this.ratingKey}&server=${machineId}`;
-
-      if (tautulliUrl) {
-        this.tautulliUrl = `${tautulliUrl}/info?rating_key=${this.ratingKey}`;
-      }
-    }
-
-    if (this.ratingKey4k) {
-      this.plexUrl4k = `${
-        webAppUrl ? webAppUrl : 'https://app.plex.tv/desktop'
-      }#!/server/${machineId}/details?key=%2Flibrary%2Fmetadata%2F${
-        this.ratingKey4k
-      }`;
-
-      this.iOSPlexUrl4k = `plex://preplay/?metadataKey=%2Flibrary%2Fmetadata%2F${this.ratingKey4k}&server=${machineId}`;
-
-      if (tautulliUrl) {
-        this.tautulliUrl4k = `${tautulliUrl}/info?rating_key=${this.ratingKey4k}`;
-      }
-    }
-  }
-
-  @AfterLoad()
-  public setServiceUrl(): void {
-    if (this.mediaType === MediaType.MOVIE) {
-      if (this.serviceId !== null && this.externalServiceSlug !== null) {
-        const settings = getSettings();
-        const server = settings.radarr.find(
-          (radarr) => radarr.id === this.serviceId
-        );
-
-        if (server) {
-          this.serviceUrl = server.externalUrl
-            ? `${server.externalUrl}/movie/${this.externalServiceSlug}`
-            : RadarrAPI.buildUrl(server, `/movie/${this.externalServiceSlug}`);
-        }
-      }
-
-      if (this.serviceId4k !== null && this.externalServiceSlug4k !== null) {
-        const settings = getSettings();
-        const server = settings.radarr.find(
-          (radarr) => radarr.id === this.serviceId4k
-        );
-
-        if (server) {
-          this.serviceUrl4k = server.externalUrl
-            ? `${server.externalUrl}/movie/${this.externalServiceSlug4k}`
-            : RadarrAPI.buildUrl(
-                server,
-                `/movie/${this.externalServiceSlug4k}`
-              );
-        }
-      }
-    }
-
-    if (this.mediaType === MediaType.TV) {
-      if (this.serviceId !== null && this.externalServiceSlug !== null) {
-        const settings = getSettings();
-        const server = settings.sonarr.find(
-          (sonarr) => sonarr.id === this.serviceId
-        );
-
-        if (server) {
-          this.serviceUrl = server.externalUrl
-            ? `${server.externalUrl}/series/${this.externalServiceSlug}`
-            : SonarrAPI.buildUrl(server, `/series/${this.externalServiceSlug}`);
-        }
-      }
-
-      if (this.serviceId4k !== null && this.externalServiceSlug4k !== null) {
-        const settings = getSettings();
-        const server = settings.sonarr.find(
-          (sonarr) => sonarr.id === this.serviceId4k
-        );
-
-        if (server) {
-          this.serviceUrl4k = server.externalUrl
-            ? `${server.externalUrl}/series/${this.externalServiceSlug4k}`
-            : SonarrAPI.buildUrl(
-                server,
-                `/series/${this.externalServiceSlug4k}`
-              );
-        }
-      }
-    }
   }
 
   @AfterLoad()

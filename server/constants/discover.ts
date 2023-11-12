@@ -3,7 +3,6 @@ import type DiscoverSlider from '@server/entity/DiscoverSlider';
 export enum DiscoverSliderType {
   RECENTLY_ADDED = 1,
   RECENT_REQUESTS,
-  PLEX_WATCHLIST,
   TRENDING,
   POPULAR_MOVIES,
   MOVIE_GENRES,
@@ -36,12 +35,6 @@ export const defaultSliders: Partial<DiscoverSlider>[] = [
     enabled: true,
     isBuiltIn: true,
     order: 1,
-  },
-  {
-    type: DiscoverSliderType.PLEX_WATCHLIST,
-    enabled: true,
-    isBuiltIn: true,
-    order: 2,
   },
   {
     type: DiscoverSliderType.TRENDING,

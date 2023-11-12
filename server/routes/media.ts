@@ -1,8 +1,6 @@
-import TautulliAPI from '@server/api/tautulli';
 import { MediaStatus, MediaType } from '@server/constants/media';
 import { getRepository } from '@server/datasource';
 import Media from '@server/entity/Media';
-import { User } from '@server/entity/User';
 import type {
   MediaResultsResponse,
   MediaWatchDataResponse,
@@ -10,7 +8,6 @@ import type {
 import { Permission } from '@server/lib/permissions';
 import { getSettings } from '@server/lib/settings';
 import logger from '@server/logger';
-import { isAuthenticated } from '@server/middleware/auth';
 import { Router } from 'express';
 import type { FindOneOptions } from 'typeorm';
 import { In } from 'typeorm';
@@ -95,7 +92,6 @@ mediaRoutes.post<
   Media
 >(
   '/:id/:status',
-  isAuthenticated(Permission.MANAGE_REQUESTS),
   async (req, res, next) => {
     const mediaRepository = getRepository(Media);
 
@@ -146,7 +142,6 @@ mediaRoutes.post<
 
 mediaRoutes.delete(
   '/:id',
-  isAuthenticated(Permission.MANAGE_REQUESTS),
   async (req, res, next) => {
     try {
       const mediaRepository = getRepository(Media);
@@ -170,16 +165,7 @@ mediaRoutes.delete(
 
 mediaRoutes.get<{ id: string }, MediaWatchDataResponse>(
   '/:id/watch_data',
-  isAuthenticated(Permission.ADMIN),
   async (req, res, next) => {
-    const settings = getSettings().tautulli;
-
-    if (!settings.hostname || !settings.port || !settings.apiKey) {
-      return next({
-        status: 404,
-        message: 'Tautulli API not configured.',
-      });
-    }
 
     const media = await getRepository(Media).findOne({
       where: { id: Number(req.params.id) },
@@ -190,70 +176,8 @@ mediaRoutes.get<{ id: string }, MediaWatchDataResponse>(
     }
 
     try {
-      const tautulli = new TautulliAPI(settings);
-      const userRepository = getRepository(User);
 
       const response: MediaWatchDataResponse = {};
-
-      if (media.ratingKey) {
-        const watchStats = await tautulli.getMediaWatchStats(media.ratingKey);
-        const watchUsers = await tautulli.getMediaWatchUsers(media.ratingKey);
-
-        const users = await userRepository
-          .createQueryBuilder('user')
-          .where('user.plexId IN (:...plexIds)', {
-            plexIds: watchUsers.map((u) => u.user_id),
-          })
-          .getMany();
-
-        const playCount =
-          watchStats.find((i) => i.query_days == 0)?.total_plays ?? 0;
-
-        const playCount7Days =
-          watchStats.find((i) => i.query_days == 7)?.total_plays ?? 0;
-
-        const playCount30Days =
-          watchStats.find((i) => i.query_days == 30)?.total_plays ?? 0;
-
-        response.data = {
-          users: users,
-          playCount,
-          playCount7Days,
-          playCount30Days,
-        };
-      }
-
-      if (media.ratingKey4k) {
-        const watchStats4k = await tautulli.getMediaWatchStats(
-          media.ratingKey4k
-        );
-        const watchUsers4k = await tautulli.getMediaWatchUsers(
-          media.ratingKey4k
-        );
-
-        const users = await userRepository
-          .createQueryBuilder('user')
-          .where('user.plexId IN (:...plexIds)', {
-            plexIds: watchUsers4k.map((u) => u.user_id),
-          })
-          .getMany();
-
-        const playCount =
-          watchStats4k.find((i) => i.query_days == 0)?.total_plays ?? 0;
-
-        const playCount7Days =
-          watchStats4k.find((i) => i.query_days == 7)?.total_plays ?? 0;
-
-        const playCount30Days =
-          watchStats4k.find((i) => i.query_days == 30)?.total_plays ?? 0;
-
-        response.data4k = {
-          users,
-          playCount,
-          playCount7Days,
-          playCount30Days,
-        };
-      }
 
       return res.status(200).json(response);
     } catch (e) {

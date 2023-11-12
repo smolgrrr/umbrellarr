@@ -1,4 +1,3 @@
-import PlexAPI from '@server/api/plexapi';
 import dataSource, { getRepository } from '@server/datasource';
 import DiscoverSlider from '@server/entity/DiscoverSlider';
 import { Session } from '@server/entity/Session';
@@ -58,27 +57,6 @@ app
     // Load Settings
     const settings = getSettings().load();
     restartFlag.initializeSettings(settings.main);
-
-    // Migrate library types
-    if (
-      settings.plex.libraries.length > 1 &&
-      !settings.plex.libraries[0].type
-    ) {
-      const userRepository = getRepository(User);
-      const admin = await userRepository.findOne({
-        select: { id: true, plexToken: true },
-        where: { id: 1 },
-      });
-
-      if (admin) {
-        logger.info('Migrating Plex libraries to include media type', {
-          label: 'Settings',
-        });
-
-        const plexapi = new PlexAPI({ plexToken: admin.plexToken });
-        await plexapi.syncLibraries();
-      }
-    }
 
     // Register Notification Agents
     notificationManager.registerAgents([

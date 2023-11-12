@@ -25,25 +25,6 @@ export interface Language {
   name: string;
 }
 
-export interface PlexSettings {
-  name: string;
-  machineId?: string;
-  ip: string;
-  port: number;
-  useSsl?: boolean;
-  libraries: Library[];
-  webAppUrl?: string;
-}
-
-export interface TautulliSettings {
-  hostname?: string;
-  port?: number;
-  useSsl?: boolean;
-  urlBase?: string;
-  apiKey?: string;
-  externalUrl?: string;
-}
-
 export interface DVRSettings {
   id: number;
   name: string;
@@ -64,22 +45,6 @@ export interface DVRSettings {
   tagRequests: boolean;
 }
 
-export interface RadarrSettings extends DVRSettings {
-  minimumAvailability: string;
-}
-
-export interface SonarrSettings extends DVRSettings {
-  seriesType: 'standard' | 'daily' | 'anime';
-  animeSeriesType: 'standard' | 'daily' | 'anime';
-  activeAnimeProfileId?: number;
-  activeAnimeProfileName?: string;
-  activeAnimeDirectory?: string;
-  activeAnimeLanguageProfileId?: number;
-  activeLanguageProfileId?: number;
-  animeTags?: number[];
-  enableSeasonFolders: boolean;
-}
-
 interface Quota {
   quotaLimit?: number;
   quotaDays?: number;
@@ -98,7 +63,6 @@ export interface MainSettings {
   };
   hideAvailable: boolean;
   localLogin: boolean;
-  newPlexLogin: boolean;
   region: string;
   originalLanguage: string;
   trustProxy: boolean;
@@ -115,8 +79,6 @@ interface FullPublicSettings extends PublicSettings {
   applicationUrl: string;
   hideAvailable: boolean;
   localLogin: boolean;
-  movie4kEnabled: boolean;
-  series4kEnabled: boolean;
   region: string;
   originalLanguage: string;
   partialRequestsEnabled: boolean;
@@ -125,7 +87,6 @@ interface FullPublicSettings extends PublicSettings {
   enablePushRegistration: boolean;
   locale: string;
   emailEnabled: boolean;
-  newPlexLogin: boolean;
 }
 
 export interface NotificationAgentConfig {
@@ -245,11 +206,6 @@ interface JobSettings {
 }
 
 export type JobId =
-  | 'plex-recently-added-scan'
-  | 'plex-full-scan'
-  | 'plex-watchlist-sync'
-  | 'radarr-scan'
-  | 'sonarr-scan'
   | 'download-sync'
   | 'download-sync-reset'
   | 'image-cache-cleanup'
@@ -260,10 +216,6 @@ interface AllSettings {
   vapidPublic: string;
   vapidPrivate: string;
   main: MainSettings;
-  plex: PlexSettings;
-  tautulli: TautulliSettings;
-  radarr: RadarrSettings[];
-  sonarr: SonarrSettings[];
   public: PublicSettings;
   notifications: NotificationSettings;
   jobs: Record<JobId, JobSettings>;
@@ -294,23 +246,12 @@ class Settings {
         },
         hideAvailable: false,
         localLogin: true,
-        newPlexLogin: true,
         region: '',
         originalLanguage: '',
         trustProxy: false,
         partialRequestsEnabled: true,
         locale: 'en',
       },
-      plex: {
-        name: '',
-        ip: '',
-        port: 32400,
-        useSsl: false,
-        libraries: [],
-      },
-      tautulli: {},
-      radarr: [],
-      sonarr: [],
       public: {
         initialized: false,
       },
@@ -400,21 +341,6 @@ class Settings {
         },
       },
       jobs: {
-        'plex-recently-added-scan': {
-          schedule: '0 */5 * * * *',
-        },
-        'plex-full-scan': {
-          schedule: '0 0 3 * * *',
-        },
-        'plex-watchlist-sync': {
-          schedule: '0 */10 * * * *',
-        },
-        'radarr-scan': {
-          schedule: '0 0 4 * * *',
-        },
-        'sonarr-scan': {
-          schedule: '0 30 4 * * *',
-        },
         'availability-sync': {
           schedule: '0 0 5 * * *',
         },
@@ -446,38 +372,6 @@ class Settings {
     this.data.main = data;
   }
 
-  get plex(): PlexSettings {
-    return this.data.plex;
-  }
-
-  set plex(data: PlexSettings) {
-    this.data.plex = data;
-  }
-
-  get tautulli(): TautulliSettings {
-    return this.data.tautulli;
-  }
-
-  set tautulli(data: TautulliSettings) {
-    this.data.tautulli = data;
-  }
-
-  get radarr(): RadarrSettings[] {
-    return this.data.radarr;
-  }
-
-  set radarr(data: RadarrSettings[]) {
-    this.data.radarr = data;
-  }
-
-  get sonarr(): SonarrSettings[] {
-    return this.data.sonarr;
-  }
-
-  set sonarr(data: SonarrSettings[]) {
-    this.data.sonarr = data;
-  }
-
   get public(): PublicSettings {
     return this.data.public;
   }
@@ -493,12 +387,6 @@ class Settings {
       applicationUrl: this.data.main.applicationUrl,
       hideAvailable: this.data.main.hideAvailable,
       localLogin: this.data.main.localLogin,
-      movie4kEnabled: this.data.radarr.some(
-        (radarr) => radarr.is4k && radarr.isDefault
-      ),
-      series4kEnabled: this.data.sonarr.some(
-        (sonarr) => sonarr.is4k && sonarr.isDefault
-      ),
       region: this.data.main.region,
       originalLanguage: this.data.main.originalLanguage,
       partialRequestsEnabled: this.data.main.partialRequestsEnabled,
@@ -507,7 +395,6 @@ class Settings {
       enablePushRegistration: this.data.notifications.agents.webpush.enabled,
       locale: this.data.main.locale,
       emailEnabled: this.data.notifications.agents.email.enabled,
-      newPlexLogin: this.data.main.newPlexLogin,
     };
   }
 

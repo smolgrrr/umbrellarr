@@ -8,7 +8,6 @@ import { getRepository } from '@server/datasource';
 import Media from '@server/entity/Media';
 import { MediaRequest } from '@server/entity/MediaRequest';
 import Season from '@server/entity/Season';
-import notificationManager, { Notification } from '@server/lib/notifications';
 import logger from '@server/logger';
 import { truncate } from 'lodash';
 import type { EntitySubscriberInterface, UpdateEvent } from 'typeorm';
@@ -42,31 +41,6 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
 
           try {
             const movie = await tmdb.getMovie({ movieId: entity.tmdbId });
-
-            relatedRequests.forEach((request) => {
-              notificationManager.sendNotification(
-                Notification.MEDIA_AVAILABLE,
-                {
-                  event: `${is4k ? '4K ' : ''}Movie Request Now Available`,
-                  notifyAdmin: false,
-                  notifySystem: true,
-                  notifyUser: request.requestedBy,
-                  subject: `${movie.title}${
-                    movie.release_date
-                      ? ` (${movie.release_date.slice(0, 4)})`
-                      : ''
-                  }`,
-                  message: truncate(movie.overview, {
-                    length: 500,
-                    separator: /\s/,
-                    omission: '…',
-                  }),
-                  media: entity,
-                  image: `https://image.tmdb.org/t/p/w600_and_h900_bestv2${movie.poster_path}`,
-                  request,
-                }
-              );
-            });
           } catch (e) {
             logger.error('Something went wrong sending media notification(s)', {
               label: 'Notifications',
@@ -137,31 +111,6 @@ export class MediaSubscriber implements EntitySubscriberInterface<Media> {
 
           try {
             const tv = await tmdb.getTvShow({ tvId: entity.tmdbId });
-            notificationManager.sendNotification(Notification.MEDIA_AVAILABLE, {
-              event: `${is4k ? '4K ' : ''}Series Request Now Available`,
-              subject: `${tv.name}${
-                tv.first_air_date ? ` (${tv.first_air_date.slice(0, 4)})` : ''
-              }`,
-              message: truncate(tv.overview, {
-                length: 500,
-                separator: /\s/,
-                omission: '…',
-              }),
-              notifyAdmin: false,
-              notifySystem: true,
-              notifyUser: request.requestedBy,
-              image: `https://image.tmdb.org/t/p/w600_and_h900_bestv2${tv.poster_path}`,
-              media: entity,
-              extra: [
-                {
-                  name: 'Requested Seasons',
-                  value: request.seasons
-                    .map((season) => season.seasonNumber)
-                    .join(', '),
-                },
-              ],
-              request,
-            });
           } catch (e) {
             logger.error('Something went wrong sending media notification(s)', {
               label: 'Notifications',

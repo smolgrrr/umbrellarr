@@ -13,14 +13,12 @@ import {
   RequestPermissionError,
 } from '@server/entity/MediaRequest';
 import SeasonRequest from '@server/entity/SeasonRequest';
-import { User } from '@server/entity/User';
 import type {
   MediaRequestBody,
   RequestResultsResponse,
 } from '@server/interfaces/api/requestInterfaces';
 import { Permission } from '@server/lib/permissions';
 import logger from '@server/logger';
-import { isAuthenticated } from '@server/middleware/auth';
 import { Router } from 'express';
 
 const requestRoutes = Router();
@@ -310,7 +308,6 @@ requestRoutes.put<{ requestId: string }>(
   '/:requestId',
   async (req, res, next) => {
     const requestRepository = getRepository(MediaRequest);
-    const userRepository = getRepository(User);
     try {
       const request = await requestRepository.findOne({
         where: {
@@ -322,44 +319,11 @@ requestRoutes.put<{ requestId: string }>(
         return next({ status: 404, message: 'Request not found.' });
       }
 
-      if (
-        (request.requestedBy.id !== req.user?.id ||
-          (req.body.mediaType !== 'tv' &&
-            !req.user?.hasPermission(Permission.REQUEST_ADVANCED))) &&
-        !req.user?.hasPermission(Permission.MANAGE_REQUESTS)
-      ) {
-        return next({
-          status: 403,
-          message: 'You do not have permission to modify this request.',
-        });
-      }
-
-      let requestUser = request.requestedBy;
-
-      if (
-        req.body.userId &&
-        req.body.userId !== request.requestedBy.id &&
-        !req.user?.hasPermission([
-          Permission.MANAGE_USERS,
-          Permission.MANAGE_REQUESTS,
-        ])
-      ) {
-        return next({
-          status: 403,
-          message: 'You do not have permission to modify the request user.',
-        });
-      } else if (req.body.userId) {
-        requestUser = await userRepository.findOneOrFail({
-          where: { id: req.body.userId },
-        });
-      }
-
       if (req.body.mediaType === MediaType.MOVIE) {
         request.serverId = req.body.serverId;
         request.profileId = req.body.profileId;
         request.rootFolder = req.body.rootFolder;
         request.tags = req.body.tags;
-        request.requestedBy = requestUser as User;
 
         requestRepository.save(request);
       } else if (req.body.mediaType === MediaType.TV) {
@@ -369,7 +333,6 @@ requestRoutes.put<{ requestId: string }>(
         request.rootFolder = req.body.rootFolder;
         request.languageProfileId = req.body.languageProfileId;
         request.tags = req.body.tags;
-        request.requestedBy = requestUser as User;
 
         const requestedSeasons = req.body.seasons as number[] | undefined;
 
@@ -455,17 +418,6 @@ requestRoutes.delete('/:requestId', async (req, res, next) => {
       relations: { requestedBy: true, modifiedBy: true },
     });
 
-    if (
-      !req.user?.hasPermission(Permission.MANAGE_REQUESTS) &&
-      request.requestedBy.id !== req.user?.id &&
-      request.status !== 1
-    ) {
-      return next({
-        status: 401,
-        message: 'You do not have permission to delete this request.',
-      });
-    }
-
     await requestRepository.remove(request);
 
     return res.status(204).send();
@@ -482,7 +434,6 @@ requestRoutes.post<{
   requestId: string;
 }>(
   '/:requestId/retry',
-  isAuthenticated(Permission.MANAGE_REQUESTS),
   async (req, res, next) => {
     const requestRepository = getRepository(MediaRequest);
 
@@ -512,7 +463,6 @@ requestRoutes.post<{
   status: 'pending' | 'approve' | 'decline';
 }>(
   '/:requestId/:status',
-  isAuthenticated(Permission.MANAGE_REQUESTS),
   async (req, res, next) => {
     const requestRepository = getRepository(MediaRequest);
 

@@ -36,7 +36,6 @@ export interface PublicSettingsResponse {
   enablePushRegistration: boolean;
   locale: string;
   emailEnabled: boolean;
-  newPlexLogin: boolean;
 }
 
 export interface CacheItem {

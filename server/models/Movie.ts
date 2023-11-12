@@ -82,7 +82,6 @@ export interface MovieDetails {
   };
   mediaInfo?: Media;
   externalIds: ExternalIds;
-  plexUrl?: string;
   watchProviders?: WatchProviders[];
   keywords: Keyword[];
 }
