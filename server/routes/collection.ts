@@ -15,11 +15,7 @@ collectionRoutes.get<{ id: string }>('/:id', async (req, res, next) => {
       language: req.locale ?? (req.query.language as string),
     });
 
-    const media = await Media.getRelatedMedia(
-      collection.parts.map((part) => part.id)
-    );
-
-    return res.status(200).json(mapCollection(collection, media));
+    return res.status(200).json(mapCollection(collection));
   } catch (e) {
     logger.debug('Something went wrong retrieving collection', {
       label: 'API',

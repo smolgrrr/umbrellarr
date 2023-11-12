@@ -17,9 +17,7 @@ tvRoutes.get('/:id', async (req, res, next) => {
       language: req.locale ?? (req.query.language as string),
     });
 
-    const media = await Media.getMedia(tv.id, MediaType.TV);
-
-    return res.status(200).json(mapTvDetails(tv, media));
+    return res.status(200).json(mapTvDetails(tv));
   } catch (e) {
     logger.debug('Something went wrong retrieving series', {
       label: 'API',
@@ -68,20 +66,13 @@ tvRoutes.get('/:id/recommendations', async (req, res, next) => {
       language: req.locale ?? (req.query.language as string),
     });
 
-    const media = await Media.getRelatedMedia(
-      results.results.map((result) => result.id)
-    );
-
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
       totalResults: results.total_results,
       results: results.results.map((result) =>
         mapTvResult(
-          result,
-          media.find(
-            (req) => req.tmdbId === result.id && req.mediaType === MediaType.TV
-          )
+          result
         )
       ),
     });
@@ -108,20 +99,13 @@ tvRoutes.get('/:id/similar', async (req, res, next) => {
       language: req.locale ?? (req.query.language as string),
     });
 
-    const media = await Media.getRelatedMedia(
-      results.results.map((result) => result.id)
-    );
-
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
       totalResults: results.total_results,
       results: results.results.map((result) =>
         mapTvResult(
-          result,
-          media.find(
-            (req) => req.tmdbId === result.id && req.mediaType === MediaType.TV
-          )
+          result
         )
       ),
     });

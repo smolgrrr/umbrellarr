@@ -41,34 +41,18 @@ personRoutes.get('/:id/combined_credits', async (req, res, next) => {
       language: req.locale ?? (req.query.language as string),
     });
 
-    const castMedia = await Media.getRelatedMedia(
-      combinedCredits.cast.map((result) => result.id)
-    );
-
-    const crewMedia = await Media.getRelatedMedia(
-      combinedCredits.crew.map((result) => result.id)
-    );
-
     return res.status(200).json({
       cast: combinedCredits.cast
         .map((result) =>
           mapCastCredits(
-            result,
-            castMedia.find(
-              (med) =>
-                med.tmdbId === result.id && med.mediaType === result.media_type
-            )
+            result
           )
         )
         .filter((item) => !item.adult),
       crew: combinedCredits.crew
         .map((result) =>
           mapCrewCredits(
-            result,
-            crewMedia.find(
-              (med) =>
-                med.tmdbId === result.id && med.mediaType === result.media_type
-            )
+            result
           )
         )
         .filter((item) => !item.adult),

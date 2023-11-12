@@ -1,13 +1,8 @@
-import PushoverAPI from '@server/api/pushover';
 import TheMovieDb from '@server/api/themoviedb';
 import type {
   TmdbMovieResult,
   TmdbTvResult,
 } from '@server/api/themoviedb/interfaces';
-import { getRepository } from '@server/datasource';
-import DiscoverSlider from '@server/entity/DiscoverSlider';
-import type { StatusResponse } from '@server/interfaces/api/settingsInterfaces';
-import { Permission } from '@server/lib/permissions';
 import { getSettings } from '@server/lib/settings';
 import logger from '@server/logger';
 import { mapWatchProviderDetails } from '@server/models/common';
@@ -15,8 +10,6 @@ import { mapProductionCompany } from '@server/models/Movie';
 import { mapNetwork } from '@server/models/Tv';
 import settingsRoutes from '@server/routes/settings';
 import { appDataPath, appDataStatus } from '@server/utils/appDataVolume';
-import { getAppVersion, getCommitTag } from '@server/utils/appVersion';
-import restartFlag from '@server/utils/restartFlag';
 import { isPerson } from '@server/utils/typeHelpers';
 import { Router } from 'express';
 import collectionRoutes from './collection';
@@ -48,37 +41,6 @@ router.get('/settings/public', async (req, res) => {
     return res.status(200).json(settings.fullPublicSettings);
   }
 });
-router.get('/settings/discover', async (_req, res) => {
-  const sliderRepository = getRepository(DiscoverSlider);
-
-  const sliders = await sliderRepository.find({ order: { order: 'ASC' } });
-
-  return res.json(sliders);
-});
-router.get(
-  '/settings/notifications/pushover/sounds',
-  async (req, res, next) => {
-    const pushoverApi = new PushoverAPI();
-
-    try {
-      if (!req.query.token) {
-        throw new Error('Pushover application token missing from request');
-      }
-
-      const sounds = await pushoverApi.getSounds(req.query.token as string);
-      res.status(200).json(sounds);
-    } catch (e) {
-      logger.debug('Something went wrong retrieving Pushover sounds', {
-        label: 'API',
-        errorMessage: e.message,
-      });
-      return next({
-        status: 500,
-        message: 'Unable to retrieve Pushover sounds.',
-      });
-    }
-  }
-);
 router.use('/settings', settingsRoutes);
 router.use('/search',  searchRoutes);
 router.use('/discover',  discoverRoutes);

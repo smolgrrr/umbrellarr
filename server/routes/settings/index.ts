@@ -1,4 +1,3 @@
-import { getRepository } from '@server/datasource';
 import Media from '@server/entity/Media';
 import { MediaRequest } from '@server/entity/MediaRequest';
 import type {
@@ -286,21 +285,5 @@ settingsRoutes.post<{ cacheId: AvailableCacheIds }>(
     next({ status: 404, message: 'Cache not found.' });
   }
 );
-
-settingsRoutes.get('/about', async (req, res) => {
-  const mediaRepository = getRepository(Media);
-  const mediaRequestRepository = getRepository(MediaRequest);
-
-  const totalMediaItems = await mediaRepository.count();
-  const totalRequests = await mediaRequestRepository.count();
-
-  return res.status(200).json({
-    version: getAppVersion(),
-    totalMediaItems,
-    totalRequests,
-    tz: process.env.TZ,
-    appDataPath: appDataPath(),
-  } as SettingsAboutResponse);
-});
 
 export default settingsRoutes;

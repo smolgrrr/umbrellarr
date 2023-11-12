@@ -16,7 +16,6 @@ export interface Collection {
 
 export const mapCollection = (
   collection: TmdbCollection,
-  media: Media[]
 ): Collection => ({
   id: collection.id,
   name: collection.name,
@@ -26,9 +25,6 @@ export const mapCollection = (
   parts: sortBy(collection.parts, 'release_date').map((part) =>
     mapMovieResult(
       part,
-      media?.find(
-        (req) => req.tmdbId === part.id && req.mediaType === MediaType.MOVIE
-      )
     )
   ),
 });

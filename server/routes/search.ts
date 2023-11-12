@@ -33,15 +33,11 @@ searchRoutes.get('/', async (req, res, next) => {
       });
     }
 
-    const media = await Media.getRelatedMedia(
-      results.results.map((result) => result.id)
-    );
-
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
       totalResults: results.total_results,
-      results: mapSearchResults(results.results, media),
+      results: mapSearchResults(results.results),
     });
   } catch (e) {
     logger.debug('Something went wrong retrieving search results', {

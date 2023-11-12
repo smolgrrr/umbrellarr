@@ -18,10 +18,6 @@ movieRoutes.get('/:id', async (req, res, next) => {
       movieId: Number(req.params.id),
       language: req.locale ?? (req.query.language as string),
     });
-
-    const media = await Media.getMedia(tmdbMovie.id, MediaType.MOVIE);
-
-    return res.status(200).json(mapMovieDetails(tmdbMovie, media));
   } catch (e) {
     logger.debug('Something went wrong retrieving movie', {
       label: 'API',
@@ -45,10 +41,6 @@ movieRoutes.get('/:id/recommendations', async (req, res, next) => {
       language: req.locale ?? (req.query.language as string),
     });
 
-    const media = await Media.getRelatedMedia(
-      results.results.map((result) => result.id)
-    );
-
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
@@ -56,10 +48,6 @@ movieRoutes.get('/:id/recommendations', async (req, res, next) => {
       results: results.results.map((result) =>
         mapMovieResult(
           result,
-          media.find(
-            (req) =>
-              req.tmdbId === result.id && req.mediaType === MediaType.MOVIE
-          )
         )
       ),
     });
@@ -85,11 +73,6 @@ movieRoutes.get('/:id/similar', async (req, res, next) => {
       page: Number(req.query.page),
       language: req.locale ?? (req.query.language as string),
     });
-
-    const media = await Media.getRelatedMedia(
-      results.results.map((result) => result.id)
-    );
-
     return res.status(200).json({
       page: results.page,
       totalPages: results.total_pages,
@@ -97,10 +80,6 @@ movieRoutes.get('/:id/similar', async (req, res, next) => {
       results: results.results.map((result) =>
         mapMovieResult(
           result,
-          media.find(
-            (req) =>
-              req.tmdbId === result.id && req.mediaType === MediaType.MOVIE
-          )
         )
       ),
     });

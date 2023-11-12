@@ -1,19 +1,6 @@
-import dataSource, { getRepository } from '@server/datasource';
 import DiscoverSlider from '@server/entity/DiscoverSlider';
 import { Session } from '@server/entity/Session';
-import { User } from '@server/entity/User';
 import { startJobs } from '@server/job/schedule';
-import notificationManager from '@server/lib/notifications';
-import DiscordAgent from '@server/lib/notifications/agents/discord';
-import EmailAgent from '@server/lib/notifications/agents/email';
-import GotifyAgent from '@server/lib/notifications/agents/gotify';
-import LunaSeaAgent from '@server/lib/notifications/agents/lunasea';
-import PushbulletAgent from '@server/lib/notifications/agents/pushbullet';
-import PushoverAgent from '@server/lib/notifications/agents/pushover';
-import SlackAgent from '@server/lib/notifications/agents/slack';
-import TelegramAgent from '@server/lib/notifications/agents/telegram';
-import WebhookAgent from '@server/lib/notifications/agents/webhook';
-import WebPushAgent from '@server/lib/notifications/agents/webpush';
 import { getSettings } from '@server/lib/settings';
 import logger from '@server/logger';
 import clearCookies from '@server/middleware/clearcookies';
@@ -45,38 +32,12 @@ const handle = app.getRequestHandler();
 app
   .prepare()
   .then(async () => {
-    const dbConnection = await dataSource.initialize();
-
-    // Run migrations in production
-    if (process.env.NODE_ENV === 'production') {
-      await dbConnection.query('PRAGMA foreign_keys=OFF');
-      await dbConnection.runMigrations();
-      await dbConnection.query('PRAGMA foreign_keys=ON');
-    }
-
     // Load Settings
     const settings = getSettings().load();
     restartFlag.initializeSettings(settings.main);
 
-    // Register Notification Agents
-    notificationManager.registerAgents([
-      new DiscordAgent(),
-      new EmailAgent(),
-      new GotifyAgent(),
-      new LunaSeaAgent(),
-      new PushbulletAgent(),
-      new PushoverAgent(),
-      new SlackAgent(),
-      new TelegramAgent(),
-      new WebhookAgent(),
-      new WebPushAgent(),
-    ]);
-
     // Start Jobs
     startJobs();
-
-    // Bootstrap Discovery Sliders
-    await DiscoverSlider.bootstrapSliders();
 
     const server = express();
     if (settings.main.trustProxy) {
@@ -120,7 +81,6 @@ app
     }
 
     // Set up sessions
-    const sessionRespository = getRepository(Session);
     server.use(
       '/api',
       session({
@@ -136,7 +96,7 @@ app
         store: new TypeormStore({
           cleanupLimit: 2,
           ttl: 1000 * 60 * 60 * 24 * 30,
-        }).connect(sessionRespository) as Store,
+        }),
       })
     );
     const apiDocs = YAML.load(API_SPEC_PATH);
