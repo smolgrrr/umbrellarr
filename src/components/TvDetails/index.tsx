@@ -26,7 +26,7 @@ import Season from '@app/components/TvDetails/Season';
 import useDeepLinks from '@app/hooks/useDeepLinks';
 import useLocale from '@app/hooks/useLocale';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import Error from '@app/pages/_error';
 import { sortCrewPriority } from '@app/utils/creditHelpers';

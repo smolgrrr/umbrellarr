@@ -4,7 +4,7 @@ import LoadingSpinner from '@app/components/Common/LoadingSpinner';
 import PageTitle from '@app/components/Common/PageTitle';
 import RequestItem from '@app/components/RequestList/RequestItem';
 import { useUpdateQueryParams } from '@app/hooks/useUpdateQueryParams';
-import { useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import {
   BarsArrowDownIcon,

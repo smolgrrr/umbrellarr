@@ -7,7 +7,6 @@ import Slider from '@app/components/Slider';
 import StatusBadge from '@app/components/StatusBadge';
 import TitleCard from '@app/components/TitleCard';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
 import globalMessages from '@app/i18n/globalMessages';
 import Error from '@app/pages/_error';
 import { refreshIntervalHelper } from '@app/utils/refreshIntervalHelper';
@@ -36,17 +35,16 @@ const CollectionDetails = ({ collection }: CollectionDetailsProps) => {
   const intl = useIntl();
   const router = useRouter();
   const settings = useSettings();
-  const { hasPermission } = useUser();
   const [requestModal, setRequestModal] = useState(false);
   const [is4k, setIs4k] = useState(false);
 
   const returnCollectionDownloadItems = (data: Collection | undefined) => {
     const [downloadStatus, downloadStatus4k] = [
       data?.parts.flatMap((item) =>
-        item.mediaInfo?.downloadStatus ? item.mediaInfo?.downloadStatus : []
+        []
       ),
       data?.parts.flatMap((item) =>
-        item.mediaInfo?.downloadStatus4k ? item.mediaInfo?.downloadStatus4k : []
+        []
       ),
     ];
 
@@ -77,10 +75,8 @@ const CollectionDetails = ({ collection }: CollectionDetailsProps) => {
   const [titles, titles4k] = useMemo(() => {
     return [
       data?.parts
-        .filter((media) => (media.mediaInfo?.downloadStatus ?? []).length > 0)
         .map((title) => title.title),
       data?.parts
-        .filter((media) => (media.mediaInfo?.downloadStatus4k ?? []).length > 0)
         .map((title) => title.title),
     ];
   }, [data?.parts]);
@@ -129,18 +125,12 @@ const CollectionDetails = ({ collection }: CollectionDetailsProps) => {
   }
 
   const hasRequestable =
-    hasPermission([Permission.REQUEST, Permission.REQUEST_MOVIE], {
-      type: 'or',
-    }) &&
     data.parts.filter(
       (part) => !part.mediaInfo || part.mediaInfo.status === MediaStatus.UNKNOWN
     ).length > 0;
 
   const hasRequestable4k =
     settings.currentSettings.movie4kEnabled &&
-    hasPermission([Permission.REQUEST_4K, Permission.REQUEST_4K_MOVIE], {
-      type: 'or',
-    }) &&
     data.parts.filter(
       (part) =>
         !part.mediaInfo || part.mediaInfo.status4k === MediaStatus.UNKNOWN
@@ -242,16 +232,11 @@ const CollectionDetails = ({ collection }: CollectionDetailsProps) => {
               downloadItem={downloadStatus}
               title={titles}
               inProgress={data.parts.some(
-                (part) => (part.mediaInfo?.downloadStatus ?? []).length > 0
+                (part) => ([]).length > 0
               )}
             />
             {settings.currentSettings.movie4kEnabled &&
-              hasPermission(
-                [Permission.REQUEST_4K, Permission.REQUEST_4K_MOVIE],
-                {
-                  type: 'or',
-                }
-              ) && (
+              (
                 <StatusBadge
                   status={collectionStatus4k}
                   downloadItem={downloadStatus4k}
@@ -259,7 +244,7 @@ const CollectionDetails = ({ collection }: CollectionDetailsProps) => {
                   is4k
                   inProgress={data.parts.some(
                     (part) =>
-                      (part.mediaInfo?.downloadStatus4k ?? []).length > 0
+                      ([]).length > 0
                   )}
                 />
               )}

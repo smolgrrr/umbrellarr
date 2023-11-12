@@ -1,6 +1,6 @@
 import Slider from '@app/components/Slider';
 import TmdbTitleCard from '@app/components/TitleCard/TmdbTitleCard';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import type { MediaResultsResponse } from '@server/interfaces/api/mediaInterfaces';
 import { defineMessages, useIntl } from 'react-intl';
 import useSWR from 'swr';

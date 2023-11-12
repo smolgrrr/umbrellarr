@@ -9,8 +9,6 @@ import { InteractionProvider } from '@app/context/InteractionContext';
 import type { AvailableLocale } from '@app/context/LanguageContext';
 import { LanguageContext } from '@app/context/LanguageContext';
 import { SettingsProvider } from '@app/context/SettingsContext';
-import { UserContext } from '@app/context/UserContext';
-import type { User } from '@app/hooks/useUser';
 import '@app/styles/globals.css';
 import { polyfillIntl } from '@app/utils/polyfillIntl';
 import type { PublicSettingsResponse } from '@server/interfaces/api/settingsInterfaces';
@@ -88,7 +86,6 @@ type NextAppComponentType = typeof App;
 type MessagesType = Record<string, string>;
 
 interface ExtendedAppProps extends AppProps {
-  user: User;
   messages: MessagesType;
   locale: AvailableLocale;
   currentSettings: PublicSettingsResponse;
@@ -102,7 +99,6 @@ const CoreApp: Omit<NextAppComponentType, 'origGetInitialProps'> = ({
   Component,
   pageProps,
   router,
-  user,
   messages,
   locale,
   currentSettings,
@@ -129,9 +125,6 @@ const CoreApp: Omit<NextAppComponentType, 'origGetInitialProps'> = ({
     <SWRConfig
       value={{
         fetcher: (url) => axios.get(url).then((res) => res.data),
-        fallback: {
-          '/api/v1/auth/me': user,
-        },
       }}
     >
       <LanguageContext.Provider value={{ locale: currentLocale, setLocale }}>
@@ -156,7 +149,6 @@ const CoreApp: Omit<NextAppComponentType, 'origGetInitialProps'> = ({
                 </Head>
                 <StatusChecker />
                 <ServiceWorkerSetup />
-                <UserContext initialUser={user}>{component}</UserContext>
               </ToastProvider>
             </InteractionProvider>
           </SettingsProvider>
@@ -168,7 +160,7 @@ const CoreApp: Omit<NextAppComponentType, 'origGetInitialProps'> = ({
 
 CoreApp.getInitialProps = async (initialProps) => {
   const { ctx, router } = initialProps;
-  let user: User | undefined = undefined;
+  let user: undefined = undefined;
   let currentSettings: PublicSettingsResponse = {
     initialized: false,
     applicationTitle: '',
@@ -185,7 +177,6 @@ CoreApp.getInitialProps = async (initialProps) => {
     enablePushRegistration: false,
     locale: 'en',
     emailEnabled: false,
-    newPlexLogin: true,
   };
 
   if (ctx.res) {
@@ -208,17 +199,6 @@ CoreApp.getInitialProps = async (initialProps) => {
     } else {
       try {
         // Attempt to get the user by running a request to the local api
-        const response = await axios.get<User>(
-          `http://localhost:${process.env.PORT || 5055}/api/v1/auth/me`,
-          {
-            headers:
-              ctx.req && ctx.req.headers.cookie
-                ? { cookie: ctx.req.headers.cookie }
-                : undefined,
-          }
-        );
-        user = response.data;
-
         if (router.pathname.match(/(setup|login)/)) {
           ctx.res.writeHead(307, {
             Location: '/',
@@ -244,14 +224,7 @@ CoreApp.getInitialProps = async (initialProps) => {
     initialProps
   );
 
-  const locale = user?.settings?.locale
-    ? user.settings.locale
-    : currentSettings.locale;
-
-  const messages = await loadLocaleData(locale as AvailableLocale);
-  await polyfillIntl(locale);
-
-  return { ...appInitialProps, user, messages, locale, currentSettings };
+  return { ...appInitialProps, currentSettings };
 };
 
 export default CoreApp;

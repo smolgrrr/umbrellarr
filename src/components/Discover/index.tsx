@@ -8,14 +8,13 @@ import CreateSlider from '@app/components/Discover/CreateSlider';
 import DiscoverSliderEdit from '@app/components/Discover/DiscoverSliderEdit';
 import MovieGenreSlider from '@app/components/Discover/MovieGenreSlider';
 import NetworkSlider from '@app/components/Discover/NetworkSlider';
-import PlexWatchlistSlider from '@app/components/Discover/PlexWatchlistSlider';
 import RecentlyAddedSlider from '@app/components/Discover/RecentlyAddedSlider';
 import RecentRequestsSlider from '@app/components/Discover/RecentRequestsSlider';
 import StudioSlider from '@app/components/Discover/StudioSlider';
 import TvGenreSlider from '@app/components/Discover/TvGenreSlider';
 import MediaSlider from '@app/components/MediaSlider';
 import { encodeURIExtraParams } from '@app/hooks/useDiscover';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { Transition } from '@headlessui/react';
 import {
@@ -53,7 +52,6 @@ const messages = defineMessages({
 
 const Discover = () => {
   const intl = useIntl();
-  const { hasPermission } = useUser();
   const { addToast } = useToasts();
   const {
     data: discoverData,
@@ -122,7 +120,7 @@ const Discover = () => {
   return (
     <>
       <PageTitle title={intl.formatMessage(messages.discover)} />
-      {hasPermission(Permission.ADMIN) && (
+      {(
         <>
           {isEditing && (
             <div className="my-6 rounded-lg bg-gray-800">
@@ -214,9 +212,6 @@ const Discover = () => {
             break;
           case DiscoverSliderType.RECENT_REQUESTS:
             sliderComponent = <RecentRequestsSlider />;
-            break;
-          case DiscoverSliderType.PLEX_WATCHLIST:
-            sliderComponent = <PlexWatchlistSlider />;
             break;
           case DiscoverSliderType.TRENDING:
             sliderComponent = (

@@ -13,7 +13,6 @@ import PlayButton from '@app/components/Common/PlayButton';
 import Tag from '@app/components/Common/Tag';
 import Tooltip from '@app/components/Common/Tooltip';
 import ExternalLinkBlock from '@app/components/ExternalLinkBlock';
-import IssueModal from '@app/components/IssueModal';
 import ManageSlideOver from '@app/components/ManageSlideOver';
 import MediaSlider from '@app/components/MediaSlider';
 import PersonCard from '@app/components/PersonCard';
@@ -23,7 +22,6 @@ import StatusBadge from '@app/components/StatusBadge';
 import useDeepLinks from '@app/hooks/useDeepLinks';
 import useLocale from '@app/hooks/useLocale';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
 import globalMessages from '@app/i18n/globalMessages';
 import Error from '@app/pages/_error';
 import { sortCrewPriority } from '@app/utils/creditHelpers';
@@ -42,8 +40,6 @@ import {
   ChevronDoubleUpIcon,
 } from '@heroicons/react/24/solid';
 import { type RatingResponse } from '@server/api/ratings';
-import { IssueStatus } from '@server/constants/issue';
-import { MediaStatus } from '@server/constants/media';
 import type { MovieDetails as MovieDetailsType } from '@server/models/Movie';
 import { hasFlag } from 'country-flag-icons';
 import 'country-flag-icons/3x2/flags.css';
@@ -96,7 +92,6 @@ interface MovieDetailsProps {
 
 const MovieDetails = ({ movie }: MovieDetailsProps) => {
   const settings = useSettings();
-  const { user, hasPermission } = useUser();
   const router = useRouter();
   const intl = useIntl();
   const { locale } = useLocale();
@@ -113,13 +108,7 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
     mutate: revalidate,
   } = useSWR<MovieDetailsType>(`/api/v1/movie/${router.query.movieId}`, {
     fallbackData: movie,
-    refreshInterval: refreshIntervalHelper(
-      {
-        downloadStatus: movie?.mediaInfo?.downloadStatus,
-        downloadStatus4k: movie?.mediaInfo?.downloadStatus4k,
-      },
-      15000
-    ),
+    refreshInterval: 15000,
   });
 
   const { data: ratingData } = useSWR<RatingResponse>(
@@ -135,13 +124,6 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
     setShowManager(router.query.manage == '1' ? true : false);
   }, [router.query.manage]);
 
-  const { plexUrl, plexUrl4k } = useDeepLinks({
-    plexUrl: data?.mediaInfo?.plexUrl,
-    plexUrl4k: data?.mediaInfo?.plexUrl4k,
-    iOSPlexUrl: data?.mediaInfo?.iOSPlexUrl,
-    iOSPlexUrl4k: data?.mediaInfo?.iOSPlexUrl4k,
-  });
-
   if (!data && !error) {
     return <LoadingSpinner />;
   }
@@ -153,32 +135,6 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
   const showAllStudios = data.productionCompanies.length <= minStudios + 1;
   const mediaLinks: PlayButtonLink[] = [];
 
-  if (
-    plexUrl &&
-    hasPermission([Permission.REQUEST, Permission.REQUEST_MOVIE], {
-      type: 'or',
-    })
-  ) {
-    mediaLinks.push({
-      text: intl.formatMessage(messages.playonplex),
-      url: plexUrl,
-      svg: <PlayIcon />,
-    });
-  }
-
-  if (
-    settings.currentSettings.movie4kEnabled &&
-    plexUrl4k &&
-    hasPermission([Permission.REQUEST_4K, Permission.REQUEST_4K_MOVIE], {
-      type: 'or',
-    })
-  ) {
-    mediaLinks.push({
-      text: intl.formatMessage(messages.play4konplex),
-      url: plexUrl4k,
-      svg: <PlayIcon />,
-    });
-  }
   const trailerUrl = data.relatedVideos
     ?.filter((r) => r.type === 'Trailer')
     .sort((a, b) => a.size - b.size)
@@ -192,11 +148,7 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
     });
   }
 
-  const region = user?.settings?.region
-    ? user.settings.region
-    : settings.currentSettings.region
-    ? settings.currentSettings.region
-    : 'US';
+  const region = 'US';
 
   const releases = data.releases.results.find(
     (r) => r.iso_3166_1 === region
@@ -278,12 +230,6 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
         </div>
       )}
       <PageTitle title={data.title} />
-      <IssueModal
-        onCancel={() => setShowIssueModal(false)}
-        show={showIssueModal}
-        mediaType="movie"
-        tmdbId={data.id}
-      />
       <ManageSlideOver
         data={data}
         mediaType="movie"
@@ -316,36 +262,19 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
           <div className="media-status">
             <StatusBadge
               status={data.mediaInfo?.status}
-              downloadItem={data.mediaInfo?.downloadStatus}
               title={data.title}
-              inProgress={(data.mediaInfo?.downloadStatus ?? []).length > 0}
               tmdbId={data.mediaInfo?.tmdbId}
               mediaType="movie"
-              plexUrl={plexUrl}
               serviceUrl={data.mediaInfo?.serviceUrl}
             />
             {settings.currentSettings.movie4kEnabled &&
-              hasPermission(
-                [
-                  Permission.MANAGE_REQUESTS,
-                  Permission.REQUEST_4K,
-                  Permission.REQUEST_4K_MOVIE,
-                ],
-                {
-                  type: 'or',
-                }
-              ) && (
+             (
                 <StatusBadge
                   status={data.mediaInfo?.status4k}
-                  downloadItem={data.mediaInfo?.downloadStatus4k}
                   title={data.title}
                   is4k
-                  inProgress={
-                    (data.mediaInfo?.downloadStatus4k ?? []).length > 0
-                  }
                   tmdbId={data.mediaInfo?.tmdbId}
                   mediaType="movie"
-                  plexUrl={plexUrl4k}
                   serviceUrl={data.mediaInfo?.serviceUrl4k}
                 />
               )}
@@ -379,21 +308,6 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
             tmdbId={data.id}
             onUpdate={() => revalidate()}
           />
-          {(data.mediaInfo?.status === MediaStatus.AVAILABLE ||
-            (settings.currentSettings.movie4kEnabled &&
-              hasPermission(
-                [Permission.REQUEST_4K, Permission.REQUEST_4K_MOVIE],
-                {
-                  type: 'or',
-                }
-              ) &&
-              data.mediaInfo?.status4k === MediaStatus.AVAILABLE)) &&
-            hasPermission(
-              [Permission.CREATE_ISSUES, Permission.MANAGE_ISSUES],
-              {
-                type: 'or',
-              }
-            ) && (
               <Tooltip content={intl.formatMessage(messages.reportissue)}>
                 <Button
                   buttonType="warning"
@@ -403,34 +317,6 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
                   <ExclamationTriangleIcon />
                 </Button>
               </Tooltip>
-            )}
-          {hasPermission(Permission.MANAGE_REQUESTS) && data.mediaInfo && (
-            <Tooltip content={intl.formatMessage(messages.managemovie)}>
-              <Button
-                buttonType="ghost"
-                onClick={() => setShowManager(true)}
-                className="relative ml-2 first:ml-0"
-              >
-                <CogIcon className="!mr-0" />
-                {hasPermission(
-                  [Permission.MANAGE_ISSUES, Permission.VIEW_ISSUES],
-                  {
-                    type: 'or',
-                  }
-                ) &&
-                  (
-                    data.mediaInfo?.issues.filter(
-                      (issue) => issue.status === IssueStatus.OPEN
-                    ) ?? []
-                  ).length > 0 && (
-                    <>
-                      <div className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-red-600" />
-                      <div className="absolute -right-1 -top-1 h-3 w-3 animate-ping rounded-full bg-red-600" />
-                    </>
-                  )}
-              </Button>
-            </Tooltip>
-          )}
         </div>
       </div>
       <div className="media-overview">
@@ -818,7 +704,6 @@ const MovieDetails = ({ movie }: MovieDetailsProps) => {
                 tvdbId={data.externalIds.tvdbId}
                 imdbId={data.externalIds.imdbId}
                 rtUrl={ratingData?.rt?.url}
-                plexUrl={data.mediaInfo?.plexUrl ?? data.mediaInfo?.plexUrl4k}
               />
             </div>
           </div>

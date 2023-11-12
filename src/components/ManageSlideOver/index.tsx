@@ -6,7 +6,7 @@ import DownloadBlock from '@app/components/DownloadBlock';
 import IssueBlock from '@app/components/IssueBlock';
 import RequestBlock from '@app/components/RequestBlock';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { Bars4Icon, ServerIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon, DocumentMinusIcon } from '@heroicons/react/24/solid';

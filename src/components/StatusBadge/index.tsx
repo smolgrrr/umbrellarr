@@ -3,7 +3,7 @@ import Badge from '@app/components/Common/Badge';
 import Tooltip from '@app/components/Common/Tooltip';
 import DownloadBlock from '@app/components/DownloadBlock';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { MediaStatus } from '@server/constants/media';
 import type { DownloadingItem } from '@server/lib/downloadtracker';

@@ -5,7 +5,7 @@ import Tooltip from '@app/components/Common/Tooltip';
 import RequestModal from '@app/components/RequestModal';
 import StatusBadge from '@app/components/StatusBadge';
 import useDeepLinks from '@app/hooks/useDeepLinks';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { refreshIntervalHelper } from '@app/utils/refreshIntervalHelper';
 import { withProperties } from '@app/utils/typeHelpers';

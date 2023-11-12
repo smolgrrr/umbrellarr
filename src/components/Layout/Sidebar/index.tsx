@@ -1,6 +1,6 @@
 import VersionStatus from '@app/components/Layout/VersionStatus';
 import useClickOutside from '@app/hooks/useClickOutside';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import { Transition } from '@headlessui/react';
 import {
   ClockIcon,

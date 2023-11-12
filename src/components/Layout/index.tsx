@@ -2,11 +2,9 @@ import MobileMenu from '@app/components/Layout/MobileMenu';
 import PullToRefresh from '@app/components/Layout/PullToRefresh';
 import SearchInput from '@app/components/Layout/SearchInput';
 import Sidebar from '@app/components/Layout/Sidebar';
-import UserDropdown from '@app/components/Layout/UserDropdown';
 import type { AvailableLocale } from '@app/context/LanguageContext';
 import useLocale from '@app/hooks/useLocale';
 import useSettings from '@app/hooks/useSettings';
-import { useUser } from '@app/hooks/useUser';
 import { ArrowLeftIcon, Bars3BottomLeftIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -18,20 +16,17 @@ type LayoutProps = {
 const Layout = ({ children }: LayoutProps) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user } = useUser();
   const router = useRouter();
   const { currentSettings } = useSettings();
   const { setLocale } = useLocale();
 
   useEffect(() => {
-    if (setLocale && user) {
+    if (setLocale) {
       setLocale(
-        (user?.settings?.locale
-          ? user.settings.locale
-          : currentSettings.locale) as AvailableLocale
+        (currentSettings.locale) as AvailableLocale
       );
     }
-  }, [setLocale, currentSettings.locale, user]);
+  }, [setLocale, currentSettings.locale]);
 
   useEffect(() => {
     const updateScrolled = () => {
@@ -91,9 +86,6 @@ const Layout = ({ children }: LayoutProps) => {
               <ArrowLeftIcon className="w-7" />
             </button>
             <SearchInput />
-            <div className="flex items-center">
-              <UserDropdown />
-            </div>
           </div>
         </div>
 

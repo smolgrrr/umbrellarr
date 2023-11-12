@@ -6,7 +6,7 @@ import RequestModal from '@app/components/RequestModal';
 import ErrorCard from '@app/components/TitleCard/ErrorCard';
 import Placeholder from '@app/components/TitleCard/Placeholder';
 import { useIsTouch } from '@app/hooks/useIsTouch';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { withProperties } from '@app/utils/typeHelpers';
 import { Transition } from '@headlessui/react';

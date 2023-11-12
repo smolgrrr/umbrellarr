@@ -5,11 +5,10 @@ import Modal from '@app/components/Common/Modal';
 import type { RequestOverrides } from '@app/components/RequestModal/AdvancedRequester';
 import AdvancedRequester from '@app/components/RequestModal/AdvancedRequester';
 import QuotaDisplay from '@app/components/RequestModal/QuotaDisplay';
-import { useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { MediaRequestStatus, MediaStatus } from '@server/constants/media';
-import type { MediaRequest } from '@server/entity/MediaRequest';
-import type { QuotaResponse } from '@server/interfaces/api/userInterfaces';
+import type { MediaRequest } from '@server/entity/MediaRequest'
 import { Permission } from '@server/lib/permissions';
 import type { Collection } from '@server/models/Collection';
 import axios from 'axios';
@@ -54,16 +53,8 @@ const CollectionRequestModal = ({
     revalidateOnMount: true,
   });
   const intl = useIntl();
-  const { user, hasPermission } = useUser();
-  const { data: quota } = useSWR<QuotaResponse>(
-    user &&
-      (!requestOverrides?.user?.id || hasPermission(Permission.MANAGE_USERS))
-      ? `/api/v1/user/${requestOverrides?.user?.id ?? user.id}/quota`
-      : null
-  );
 
-  const currentlyRemaining =
-    (quota?.movie.remaining ?? 0) - selectedParts.length;
+  const currentlyRemaining = (0 - selectedParts.length);
 
   const getAllParts = (): number[] => {
     return (data?.parts ?? []).map((part) => part.id);
@@ -112,7 +103,6 @@ const CollectionRequestModal = ({
 
     // If there are no more remaining requests available, block toggle
     if (
-      quota?.movie.limit &&
       currentlyRemaining <= 0 &&
       !isSelectedPart(tmdbId)
     ) {
@@ -131,14 +121,6 @@ const CollectionRequestModal = ({
   );
 
   const toggleAllParts = (): void => {
-    // If the user has a quota and not enough requests for all parts, block toggleAllParts
-    if (
-      quota?.movie.limit &&
-      (quota?.movie.remaining ?? 0) < unrequestedParts.length
-    ) {
-      return;
-    }
-
     if (
       data &&
       selectedParts.length >= 0 &&
@@ -232,18 +214,9 @@ const CollectionRequestModal = ({
     }
   }, [requestOverrides, data, onComplete, addToast, intl, selectedParts, is4k]);
 
-  const hasAutoApprove = hasPermission(
-    [
-      Permission.MANAGE_REQUESTS,
-      is4k ? Permission.AUTO_APPROVE_4K : Permission.AUTO_APPROVE,
-      is4k ? Permission.AUTO_APPROVE_4K_MOVIE : Permission.AUTO_APPROVE_MOVIE,
-    ],
-    { type: 'or' }
-  );
-
   return (
     <Modal
-      loading={(!data && !error) || !quota}
+      loading={(!data && !error)}
       backgroundClickable
       onCancel={onCancel}
       onOk={sendRequest}
@@ -269,26 +242,6 @@ const CollectionRequestModal = ({
       okButtonType={'primary'}
       backdrop={`https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/${data?.backdropPath}`}
     >
-      {hasAutoApprove && !quota?.movie.restricted && (
-        <div className="mt-6">
-          <Alert
-            title={intl.formatMessage(messages.requestadmin)}
-            type="info"
-          />
-        </div>
-      )}
-      {(quota?.movie.limit ?? 0) > 0 && (
-        <QuotaDisplay
-          mediaType="movie"
-          quota={quota?.movie}
-          remaining={currentlyRemaining}
-          userOverride={
-            requestOverrides?.user && requestOverrides.user.id !== user?.id
-              ? requestOverrides?.user?.id
-              : undefined
-          }
-        />
-      )}
       <div className="flex flex-col">
         <div className="-mx-4 sm:mx-0">
           <div className="inline-block min-w-full py-2 align-middle">
@@ -307,12 +260,7 @@ const CollectionRequestModal = ({
                             toggleAllParts();
                           }
                         }}
-                        className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center pt-2 focus:outline-none ${
-                          quota?.movie.limit &&
-                          (quota.movie.remaining ?? 0) < unrequestedParts.length
-                            ? 'opacity-50'
-                            : ''
-                        }`}
+                        className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center pt-2 focus:outline-none`}
                       >
                         <span
                           aria-hidden="true"
@@ -361,15 +309,7 @@ const CollectionRequestModal = ({
                                 togglePart(part.id);
                               }
                             }}
-                            className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center pt-2 focus:outline-none ${
-                              !!partMedia ||
-                              partRequest ||
-                              (quota?.movie.limit &&
-                                currentlyRemaining <= 0 &&
-                                !isSelectedPart(part.id))
-                                ? 'opacity-50'
-                                : ''
-                            }`}
+                            className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer items-center justify-center pt-2 focus:outline-none`}
                           >
                             <span
                               aria-hidden="true"
@@ -455,16 +395,6 @@ const CollectionRequestModal = ({
           </div>
         </div>
       </div>
-      {(hasPermission(Permission.REQUEST_ADVANCED) ||
-        hasPermission(Permission.MANAGE_REQUESTS)) && (
-        <AdvancedRequester
-          type="movie"
-          is4k={is4k}
-          onChange={(overrides) => {
-            setRequestOverrides(overrides);
-          }}
-        />
-      )}
     </Modal>
   );
 };

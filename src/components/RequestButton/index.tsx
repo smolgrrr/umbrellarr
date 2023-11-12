@@ -1,7 +1,7 @@
 import ButtonWithDropdown from '@app/components/Common/ButtonWithDropdown';
 import RequestModal from '@app/components/RequestModal';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import {

@@ -22,8 +22,6 @@ import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 
-const API_SPEC_PATH = path.join(__dirname, '../overseerr-api.yml');
-
 logger.info(`Starting Overseerr version ${getAppVersion()}`);
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -97,14 +95,6 @@ app
           cleanupLimit: 2,
           ttl: 1000 * 60 * 60 * 24 * 30,
         }),
-      })
-    );
-    const apiDocs = YAML.load(API_SPEC_PATH);
-    server.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocs));
-    server.use(
-      OpenApiValidator.middleware({
-        apiSpec: API_SPEC_PATH,
-        validateRequests: true,
       })
     );
     /**

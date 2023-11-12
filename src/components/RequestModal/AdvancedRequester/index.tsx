@@ -1,7 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { SmallLoadingSpinner } from '@app/components/Common/LoadingSpinner';
-import type { User } from '@app/hooks/useUser';
-import { Permission, useUser } from '@app/hooks/useUser';
 import globalMessages from '@app/i18n/globalMessages';
 import { formatBytes } from '@app/utils/numberHelpers';
 import { Listbox, Transition } from '@headlessui/react';
@@ -44,7 +42,6 @@ export type RequestOverrides = {
   folder?: string;
   tags?: number[];
   language?: number;
-  user?: User;
 };
 
 interface AdvancedRequesterProps {
@@ -52,7 +49,6 @@ interface AdvancedRequesterProps {
   is4k: boolean;
   isAnime?: boolean;
   defaultOverrides?: RequestOverrides;
-  requestUser?: User;
   onChange: (overrides: RequestOverrides) => void;
 }
 

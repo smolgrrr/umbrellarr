@@ -1,14 +1,12 @@
 /* eslint-disable no-console */
 import useSettings from '@app/hooks/useSettings';
-import { useUser } from '@app/hooks/useUser';
 import axios from 'axios';
 import { useEffect } from 'react';
 
 const ServiceWorkerSetup = () => {
   const { currentSettings } = useSettings();
-  const { user } = useUser();
   useEffect(() => {
-    if ('serviceWorker' in navigator && user?.id) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .then(async (registration) => {
@@ -39,7 +37,6 @@ const ServiceWorkerSetup = () => {
         });
     }
   }, [
-    user,
     currentSettings.vapidPublic,
     currentSettings.enablePushRegistration,
   ]);

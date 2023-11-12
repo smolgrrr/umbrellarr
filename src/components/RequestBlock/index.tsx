@@ -3,7 +3,7 @@ import Button from '@app/components/Common/Button';
 import Tooltip from '@app/components/Common/Tooltip';
 import RequestModal from '@app/components/RequestModal';
 import useRequestOverride from '@app/hooks/useRequestOverride';
-import { useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import {
   CalendarIcon,

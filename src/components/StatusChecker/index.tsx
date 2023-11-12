@@ -1,6 +1,6 @@
 import Modal from '@app/components/Common/Modal';
 import useSettings from '@app/hooks/useSettings';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { Transition } from '@headlessui/react';
 import type { StatusResponse } from '@server/interfaces/api/settingsInterfaces';

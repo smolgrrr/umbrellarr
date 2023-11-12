@@ -10,7 +10,7 @@ import SettingsBadge from '@app/components/Settings/SettingsBadge';
 import type { AvailableLocale } from '@app/context/LanguageContext';
 import { availableLanguages } from '@app/context/LanguageContext';
 import useLocale from '@app/hooks/useLocale';
-import { Permission, useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { ArrowDownOnSquareIcon } from '@heroicons/react/24/outline';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';

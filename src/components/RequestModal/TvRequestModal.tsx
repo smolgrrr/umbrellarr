@@ -6,7 +6,7 @@ import AdvancedRequester from '@app/components/RequestModal/AdvancedRequester';
 import QuotaDisplay from '@app/components/RequestModal/QuotaDisplay';
 import SearchByNameModal from '@app/components/RequestModal/SearchByNameModal';
 import useSettings from '@app/hooks/useSettings';
-import { useUser } from '@app/hooks/useUser';
+
 import globalMessages from '@app/i18n/globalMessages';
 import { ANIME_KEYWORD_ID } from '@server/api/themoviedb/constants';
 import { MediaRequestStatus, MediaStatus } from '@server/constants/media';
